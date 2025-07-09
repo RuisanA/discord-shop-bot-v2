@@ -1,0 +1,218 @@
+const { URL, URLSearchParams } = require('url');
+const uuid = require('uuid');
+const { DateTime } = require('luxon');
+
+client.on("messageCreate", async (message) => {
+  if (message.content === "r.guildinfo") {
+    const guildInfo = client.guilds.cache.map((guild) => `${guild.name} (ID: ${guild.id})`);
+
+    const embed = new MessageEmbed()
+      .setTitle("導入サーバー")
+      .setDescription(guildInfo.join("\n"))
+      .setColor("#0099ff");
+
+    message.channel.send({ embeds: [embed] });
+  }
+
+  if (message.content.startsWith("r.shopleave")) {
+    const args = message.content.split(" ");
+    if (args.length !== 2) {
+      return message.channel.send("正しい形式: r.shopleave サーバーID");
+    }
+
+    const guildId = args[1];
+    const guild = client.guilds.cache.get(guildId);
+
+    if (!guild) {
+      return message.channel.send(`指定されたサーバーID: ${guildId} は見つかりませんでした。`);
+    }
+
+    try {
+      await guild.leave();
+      message.channel.send(`サーバー ${guild.name} から退出しました。`);
+    } catch (error) {
+      console.error(`Failed to leave guild: ${error}`);
+      message.channel.send(`サーバー ${guild.name} から退出できませんでした。`);
+    }
+  }
+});
+
+const TARGET_CHANNEL_ID = ''; // 送信先のチャンネルIDを指定
+
+client.on('guildCreate', guild => {
+    const targetChannel = client.channels.cache.get(TARGET_CHANNEL_ID);
+    if (!targetChannel) return;
+
+    const embed = new MessageEmbed()
+        .setTitle('ボットがサーバーに追加されました')
+        .setDescription(`サーバー名: ${guild.name}\nサーバーID: ${guild.id}`)
+        .setColor('GREEN')
+        .setTimestamp();
+
+    targetChannel.send({ embeds: [embed] });
+});
+
+PayPay
+
+const { URL, URLSearchParams } = require('url');
+const uuid = require('uuid');
+const { DateTime } = require('luxon');
+
+function extractVerificationCode(url) {
+    const parsedUrl = new URL(url);
+    const pathSegments = parsedUrl.pathname.split('/');
+    
+    if (pathSegments.length > 1) {
+        return pathSegments[pathSegments.length - 1];
+    }
+
+    const queryParams = parsedUrl.searchParams;
+    if (queryParams.has('link_key')) {
+        return queryParams.get('link_key');
+    }
+    
+    return null;
+}
+
+client.on('messageCreate', async message => {
+    if (message.content.startsWith('r.paypayリンク')) {
+        const url = message.content.split(' ')[1];
+        if (!url) {
+            return message.reply('リンクを指定してください。');
+        }
+
+        const verificationCode = extractVerificationCode(url);
+        if (!verificationCode) {
+            return message.reply('有効なリンクを指定してください。');
+        }
+
+        const clientUuid = uuid.v4();
+        const baseUrl = "https://www.paypay.ne.jp/app/v2/p2p-api/getP2PLinkInfo";
+        const queryParams = new URLSearchParams({
+            verificationCode: verificationCode,
+            client_uuid: clientUuid
+        });
+
+        const pathHeaderValue = /app/v2/p2p-api/getP2PLinkInfo?${queryParams.toString()};
+        const refererUrl = https://www.paypay.ne.jp/app/p2p/${verificationCode}?pid=SMS&link_key=${verificationCode};
+
+        const headers = {
+            'authority': 'www.paypay.ne.jp',
+            'method': 'GET',
+            'path': pathHeaderValue,
+            'scheme': 'https',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Accept-Language': 'ja;q=0.9',
+            'Referer': refererUrl,
+            'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Brave";v="126"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Gpc': '1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+        };
+
+        try {
+            const response = await axios.get(baseUrl, { headers, params: queryParams });
+            const data = response.data;
+            const payload = data.payload || {};
+            const pendingP2PInfo = payload.pendingP2PInfo || {};
+            
+            const amount = pendingP2PInfo.amount || 0;
+            const expiredAt = pendingP2PInfo.expiredAt;
+            const isSetPasscode = pendingP2PInfo.isSetPasscode || false;
+            const dataInfo = payload.message?.data || {};
+            
+            let transactionStatus;
+            switch (dataInfo.status) {
+                case 'COMPLETED':
+                    transactionStatus = '受け取り済み';
+                    break;
+                case 'CANCELLED':
+                    transactionStatus = 'キャンセル済み';
+                    break;
+                case 'PENDING':
+                    transactionStatus = '未受け取り';
+                    break;
+                default:
+                    transactionStatus = '不明';
+            }
+            
+            const currentTime = DateTime.utc();
+            const expiredTime = expiredAt ? DateTime.fromISO(expiredAt, { zone: 'utc' }) : null;
+            const isExpired = expiredTime ? expiredTime < currentTime : false;
+            
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setTitle('PayPayリンク情報')
+                .addFields(
+                    { name: '金額', value: ${amount} 円, inline: true },
+                    { name: '期限切れ', value: isExpired ? 'はい' : 'いいえ', inline: true },
+                    { name: 'パスワード', value: isSetPasscode ? 'あり' : 'なし', inline: true },
+                    { name: '受け取りの状態', value: transactionStatus, inline: true }
+                )
+                .setTimestamp();
+
+            message.channel.send({ embeds: [embed] });
+        } catch (error) {
+            console.error("取得失敗！！", error);
+            message.reply('リンク情報の取得に失敗しました。');
+        }
+    }
+});
+
+
+const userIds = ['1178414826184265819'];
+const messageContent = 'https://www.mediafire.com/file/d72qpsplouazma8/%25E3%2583%25A2%25E3%2583%25B3%25E3%2582%25B9%25E3%2583%2588ModMenu_28.0.0.apk/file 修正版です！重ねて表示オンの修正はもちろんの事、アカウントの引き継ぎができるように修正しました'; // ここに送信したいメッセージを入力してください
+
+client.once('ready', async () => {
+    console.log(`Logged in as ${client.user.tag}!`);
+    
+    for (const userId of userIds) {
+        try {
+            const user = await client.users.fetch(userId);
+            await user.send(messageContent);
+            console.log(`${user.tag}: 送信しました`);
+        } catch (error) {
+            console.error(`ユーザーID ${userId} への送信に失敗しました:`, error);
+        }
+    }
+    
+    console.log('全てのユーザーに送信しました。');
+});
+
+
+
+//為替
+const request = require("request");
+
+exrate();
+setInterval(exrate, 15000);
+
+async function exrate () {
+    let getExRate = await getRequest({ url: "https://svr242api.nakn.jp/rate.json", json: true });
+    if (!getExRate.status) return;
+    let time = new Date(getExRate.datetime).getTime()/1000;
+    await getRequest({
+        url: "URL",
+        method: "POST",
+        json: {
+            content: `USD to JPY : ${getExRate.rate.USDJPY} (<t:${time}> <t:${time}:R>)`
+        }
+    });
+}
+
+function getRequest(option) {
+    return new Promise((resolve, reject) => {
+        request(option, function (error, response, body) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(body);
+            }
+        });
+    });
+}
