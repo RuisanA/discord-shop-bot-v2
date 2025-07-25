@@ -316,12 +316,12 @@ client.on("interactionCreate", async (interaction) => {
         (content = "現在対応不可能です"),
           (color = "RED"),
           (image =
-            "https://media.discordapp.net/attachments/1133014806966849671/1177633171978858496/mark_batsu_illust_898.png?ex=6573375b&is=6560c25b&hm=65e2dec3f79560994a747f60&=&width=1066&height=1066");
+            "https://aserora.net/batu.png");
       else if (description == "現在対応不可能です")
         (content = "現在対応可能です"),
           (color = "GREEN"),
           (image =
-            "https://media.discordapp.net/attachments/1133014806966849671/1177633578478223461/1700840113611.png?ex=657337bc&is=6560c2bc&hm=9351a9c177a1d9c9dede6f6a&=&width=680&height=680");
+            "https://aserora.net/maru.png");
       const embed = new MessageEmbed()
         .setTitle("対応状況")
         .setDescription(content)
@@ -1850,7 +1850,7 @@ client.on("interactionCreate", async (interaction) => {
       .setTitle("対応状況")
       .setDescription("現在対応可能です")
       .setImage(
-        "https://media.discordapp.net/attachments/1133014806966849671/1177633578478223461/1700840113611.png?ex=657337bc&is=6560c2bc&hm=9351a9c177a1d9c9dede6f6a&=&width=680&height=680"
+        "https://aserora.net/maru.png"
       )
       .setColor("GREEN");
     interaction.reply({
