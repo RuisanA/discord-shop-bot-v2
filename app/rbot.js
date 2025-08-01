@@ -243,7 +243,7 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId == "ifdelete") {
     if (!interaction.isButton()) return;
   
-    const allowedRoleId = "1388759846727188521";
+    const allowedRoleId = "1388759854738571268";
   
     if (!interaction.member.roles.cache.has(allowedRoleId)) {
       return interaction.reply({
@@ -1250,7 +1250,7 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName === "modpanel") {
-    const allowedRoleId = "1388759846727188521";
+    const allowedRoleId = "1388759854738571268";
     const member = interaction.guild.members.cache.get(interaction.user.id);
 
     if (!member.roles.cache.has(allowedRoleId)) {
@@ -1308,7 +1308,7 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
   if (interaction.commandName === "にゃんこ代行パネル") {
-    const allowedRoleId = "1388759846727188521";
+    const allowedRoleId = "1388759854738571268";
     const member = interaction.guild.members.cache.get(interaction.user.id);
 
     if (!member.roles.cache.has(allowedRoleId)) {
@@ -1385,7 +1385,7 @@ client.once("ready", async () => {
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
     if (interaction.commandName === "ツムツム代行パネル") {
-      const allowedRoleId = "1388759846727188521";
+      const allowedRoleId = "1388759854738571268";
       const member = interaction.guild.members.cache.get(interaction.user.id);
   
       if (!member.roles.cache.has(allowedRoleId)) {
@@ -1613,7 +1613,7 @@ client.on("interactionCreate", async (interaction) => {
 client.on("interactionCreate", async (interaction) => {
     if (!interaction.isCommand()) return;
     if (interaction.commandName === "ぷにぷに代行パネル") {
-      const allowedRoleId = "1388759846727188521";
+      const allowedRoleId = "1388759854738571268";
       const member = interaction.guild.members.cache.get(interaction.user.id);
   
       if (!member.roles.cache.has(allowedRoleId)) {
@@ -2539,13 +2539,13 @@ client.on("messageCreate", async (message) => {
       return message.channel.send("このコマンドを実行する権限がありません。");
     }
   
-      const category = "1209000933200101386",
-            role = "1236292388146778184",
+      const category = "1388759852771311716",
+            role = "1388759857976442880",
             welcome = "久垢販売";
       const embed = new MessageEmbed()
         .setTitle("久垢販売")
         .setDescription(`商品番号,個数,送金リンクを入力してください`)
-        .setImage(`https://cdn.glitch.global/c9caa77c-d7aa-4627-bda6-632c554e30a6/phonto.jpg?v=1746953486853`)
+        .setImage(`https://media.discordapp.net/attachments/1201564169154088971/1371046666479734894/phonto.jpg?ex=688d2876&is=688bd6f6&hm=9d20c0ac6e5f1507369191dc096acce735cd5cac4d4632b4e1aab93a1c4977d2&=&format=webp&width=1376&height=917`)
         .setColor("RANDOM");
       message.channel.send({
         embeds: [embed],
