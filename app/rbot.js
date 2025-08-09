@@ -1627,7 +1627,7 @@ client.on("interactionCreate", async (interaction) => {
         role = interaction.options.getRole("ロール") || "undefined";
       const embed = new MessageEmbed()
         .setTitle("ぷにぷに代行")
-        .setDescription(`メールアドレスとパスワードに間違いがないようにしてください。ワイポ代行の際は強敵取得は無料です\n\n1.5万ワイポ 800円\n2.10万ワイポ 1500円\n3.20万ワイポ 3000円\n4.強敵取得 500円\n5.強敵完凸 1000円\n6.12時間周回 600円\n7.24時間周回 1200円\n8.取り巻き全撃破 300円\n9.ステージ進行 400円\n\nお支払い方法 PayPay`)
+        .setDescription(`メールアドレスとパスワードに間違いがないようにしてください。ワイポ代行の際は強敵取得は無料です\n\n1.強敵取得 500円\n2.強敵完凸 1000円\n3.12時間周回 600円\n4.24時間周回 1200円\n5.取り巻き全撃破 300円\n6.ステージ進行 400円\n\nお支払い方法 PayPay`)
         .setColor("RANDOM");
       interaction.reply({
         embeds: [embed],
