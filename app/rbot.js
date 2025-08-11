@@ -1341,7 +1341,7 @@ client.on("interactionCreate", async (interaction) => {
 .addField(`14.BAN保証`, `> 500円`)
 .addField(`15.永久BAN保証`, `> 5000円`)
 .addField(`16.永久猫缶補充`, `> 3000円`)
-    .setImage("https://cdn.glitch.global/c9caa77c-d7aa-4627-bda6-632c554e30a6/show.png?v=1746854423012")
+    .setImage("https://img.game8.jp/11627252/bee2cb864f9b7f4d43ac100e8daf5446.webp/show")
       .setColor("RANDOM");
     interaction.reply({
       embeds: [embed],
