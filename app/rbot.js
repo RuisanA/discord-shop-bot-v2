@@ -2545,7 +2545,7 @@ client.on("messageCreate", async (message) => {
       const embed = new MessageEmbed()
         .setTitle("久垢販売")
         .setDescription(`商品番号,個数,送金リンクを入力してください`)
-        .setImage(`https://media.discordapp.net/attachments/1365763128851435633/1406144374512947301/phonto.jpg?ex=68a1657f&is=68a013ff&hm=d70cc459bbf3f781385179f71a16c02151271fc7796485eb668475dea225b9c6&=&format=webp`)
+        .setImage(`https://media.discordapp.net/attachments/1365763128851435633/1406154639363014707/image0.jpg?ex=68a16f0f&is=68a01d8f&hm=32b4d20a8dd5a664cf4bad2e8d5615b8a34b956512dae00a691140ae882f2575&=&format=webp&width=455&height=350`)
         .setColor("RANDOM");
       message.channel.send({
         embeds: [embed],
