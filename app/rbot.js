@@ -1639,13 +1639,6 @@ client.on("interactionCreate", async (interaction) => {
               style: "SUCCESS",
             },
           ]),
-          newbutton([
-            {
-              id: `attention`,
-              label: "代行の際の注意事項",
-              style: "SUCCESS",
-            },
-          ]),
         ],
       });
     }
