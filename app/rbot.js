@@ -2461,6 +2461,194 @@ client.on('messageCreate', async message => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot || !message.guild) return;
 
+  if (message.content === "paycheck") {
+    const embed = new MessageEmbed()
+    .setTitle("PayPayリンクチェック")
+    .setTimestamp()
+    .setColor("RANDOM");
+
+    message.channel.send({
+        embeds: [embed],
+        components: [
+          newbutton([
+            {
+              id: `paypay`,
+              label: "チェック",
+              style: "SUCCESS",
+            },
+          ]),
+        ],
+      });
+  }
+});
+
+client.on("interactionCreate", async (interaction) => {
+  // ボタン処理
+  if (interaction.isButton()) {
+    if (interaction.customId.startsWith("paypay")) {
+        
+      const modal = new Modal()
+        .setCustomId("paypay_modal") // 送信識別用にIDを固定または明確にします
+        .setTitle("情報入力フォーム")
+        .addComponents(
+          new TextInputComponent()
+            .setCustomId("paypay_link")
+            .setLabel("送金リンク")
+            .setStyle("LONG")
+            .setPlaceholder(
+              "[PayPay] 受け取り依頼が届きました。下記リンクより、受け取りを完了してください。\n\nhttps://pay.paypay.ne.jp/0123456789abcdef"
+            )
+            .setRequired(true)
+        );
+      
+      showModal(modal, {
+        client: client,
+        interaction: interaction,
+      });
+    }
+    return;
+  }
+
+  // Modal 送信時の処理
+  if (interaction.isModalSubmit && interaction.isModalSubmit()) {
+    if (interaction.customId === "paypay_modal") {
+      // 応答を保留（処理に時間がかかる場合にタイムアウトを防ぐため）
+      await interaction.deferReply({ ephemeral: true });
+
+      // 入力されたテキストの取得
+      const inputText = interaction.getTextInputValue("paypay_link");
+
+      // テキスト内から URL (https://...) を正規表現で抽出
+      const urlMatch = inputText.match(/https?:\/\/[^\s]+/);
+      if (!urlMatch) {
+        return interaction.editReply({
+          content: "有効なURLが見つかりませんでした。",
+        });
+      }
+
+      const url = urlMatch[0];
+      const verificationCode = extractVerificationCode(url);
+
+      if (!verificationCode) {
+        return interaction.editReply({
+          content: "有効なリンクを指定してください。",
+        });
+      }
+
+      const clientUuid = uuid.v4();
+      const baseUrl = "https://www.paypay.ne.jp/app/v2/p2p-api/getP2PLinkInfo";
+      const queryParams = {
+        verificationCode: verificationCode,
+        client_uuid: clientUuid,
+      };
+
+      const pathHeaderValue = `/app/v2/p2p-api/getP2PLinkInfo?verificationCode=${verificationCode}&client_uuid=${clientUuid}`;
+      const refererUrl = `https://www.paypay.ne.jp/app/p2p/${verificationCode}?pid=SMS&link_key=${verificationCode}`;
+
+      const headers = {
+        'authority': 'www.paypay.ne.jp',
+        'method': 'GET',
+        'path': pathHeaderValue,
+        'scheme': 'https',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'ja;q=0.9',
+        'Referer': refererUrl,
+        'Sec-Ch-Ua': '"Not/A)Brand";v="8", "Chromium";v="126", "Brave";v="126"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Gpc': '1',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+      };
+
+      try {
+        const response = await axios.get(baseUrl, {
+          headers,
+          params: queryParams,
+        });
+
+        const data = response.data;
+        const payload = data.payload || {};
+        const pendingP2PInfo = payload.pendingP2PInfo || {};
+
+        const amount = pendingP2PInfo.amount || 0;
+        const expiredAt = pendingP2PInfo.expiredAt;
+        const isSetPasscode = pendingP2PInfo.isSetPasscode || false;
+        const dataInfo = payload.message?.data || {};
+        const createdAt = pendingP2PInfo.createdAt || null;
+
+        // ステータス判定
+        let transactionStatus;
+        switch (dataInfo.status) {
+          case "COMPLETED":
+            transactionStatus = "受け取り済み";
+            break;
+          case "CANCELLED":
+            transactionStatus = "キャンセル済み";
+            break;
+          case "PENDING":
+            transactionStatus = "未受け取り";
+            break;
+          default:
+            transactionStatus = "不明";
+        }
+
+        // 期限判定
+        const currentTime = DateTime.now().toUTC();
+        const expiredTime = expiredAt ? DateTime.fromISO(expiredAt).toUTC() : null;
+        const isExpired = expiredTime ? expiredTime < currentTime : false;
+
+        const senderInfo = payload.sender || {};
+        const senderName = senderInfo.displayName || "Unknown";
+
+        const subWalletSplit = dataInfo.subWalletSplit || {};
+        const senderEmoneyAmount = subWalletSplit.senderEmoneyAmount || 0;
+        const senderPrepaidAmount = subWalletSplit.senderPrepaidAmount || 0;
+
+        const orderId = pendingP2PInfo.orderId || "Unknown";
+        const userImageUrl = pendingP2PInfo.imageUrl || "";
+
+        // 参考コードと同等の Embed を作成
+        const embed = new MessageEmbed()
+          .setColor('RED')
+          .setThumbnail(userImageUrl)
+          .setTitle('PayPayリンク情報')
+          .addFields(
+            { name: 'ユーザー名', value: senderName, inline: true },
+            { name: '金額', value: `${amount} 円`, inline: true },
+            { name: 'PayPayマネー', value: `${senderEmoneyAmount} 円`, inline: true },
+            { name: 'PayPayマネーライト', value: `${senderPrepaidAmount} 円`, inline: true },
+            { name: '期限切れ', value: isExpired ? 'はい' : 'いいえ', inline: true },
+            { name: 'パスワード', value: isSetPasscode ? 'あり' : 'なし', inline: true },
+            { name: '受け取りの状態', value: transactionStatus, inline: true },
+            { name: '送信日時', value: createdAt
+                ? DateTime.fromISO(createdAt)
+                    .setZone('Asia/Tokyo')
+                    .toFormat('yyyy-MM-dd HH:mm:ss')
+                : '不明', inline: true },
+            { name: '決済番号', value: orderId, inline: true }
+          )
+          .setTimestamp();
+
+        // 実行したユーザーにのみ見える形で返信 (ephemeral: true)
+        await interaction.editReply({ embeds: [embed], ephemeral: true });
+      } catch (error) {
+        console.error('取得失敗！！', error);
+        await interaction.editReply({
+          content: 'リンク情報の取得に失敗しました。',
+          ephemeral: true
+        });
+      }
+    }
+  }
+});
+
+client.on("messageCreate", async (message) => {
+  if (message.author.bot || !message.guild) return;
+
   if (message.content === "!channelcount") {
     await sendChannelCountEmbed(message.channel, message.author);
   }
