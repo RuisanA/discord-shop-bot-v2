@@ -2486,7 +2486,7 @@ client.on("interactionCreate", async (interaction) => {
   // ボタン処理
   if (interaction.isButton()) {
     if (interaction.customId.startsWith("paypay")) {
-        
+
       const modal = new Modal()
         .setCustomId("paypay_modal") // 送信識別用にIDを固定または明確にします
         .setTitle("情報入力フォーム")
@@ -2634,12 +2634,11 @@ client.on("interactionCreate", async (interaction) => {
           .setTimestamp();
 
         // 実行したユーザーにのみ見える形で返信 (ephemeral: true)
-        await interaction.editReply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed]});
       } catch (error) {
         console.error('取得失敗！！', error);
         await interaction.editReply({
           content: 'リンク情報の取得に失敗しました。',
-          ephemeral: true
         });
       }
     }
