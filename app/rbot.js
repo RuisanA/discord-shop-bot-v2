@@ -2521,7 +2521,7 @@ client.on("interactionCreate", async (interaction) => {
 
       const [paypay_link] = [
         "paypay_link",
-      ].map((id) => interaction.getTextInputValue(id));
+      ].map((id) => interaction.fields.getTextInputValue(id));
       let link;
       const value = paypay_link.split(/\r\n|\n/g);
       for (let i in value) {
