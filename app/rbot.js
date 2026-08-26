@@ -2486,9 +2486,13 @@ client.on("interactionCreate", async (interaction) => {
   // ボタン処理
   if (interaction.isButton()) {
     if (interaction.customId.startsWith("paypay")) {
-
+        const customId = `${
+        interaction.customId
+      }-${interaction.message.embeds[0].fields
+        .map((field) => field.name.charAt(0))
+        .join("/")}`;
       const modal = new Modal()
-        .setCustomId("paypay_modal") // 送信識別用にIDを固定または明確にします
+        .setCustomId(customId) // 送信識別用にIDを固定または明確にします
         .setTitle("情報入力フォーム")
         .addComponents(
           new TextInputComponent()
@@ -2511,15 +2515,28 @@ client.on("interactionCreate", async (interaction) => {
 
   // Modal 送信時の処理
   if (interaction.isModalSubmit && interaction.isModalSubmit()) {
-    if (interaction.customId === "paypay_modal") {
+    if (interaction.customId === "paypay-") {
       // 応答を保留（処理に時間がかかる場合にタイムアウトを防ぐため）
       await interaction.deferReply({ ephemeral: true });
 
-      // 入力されたテキストの取得
-      const inputText = interaction.getTextInputValue("paypay_link");
+      const [paypay_link] = [
+        "paypay_link",
+      ].map((id) => interaction.getTextInputValue(id));
+      let link;
+      const value = paypay_link.split(/\r\n|\n/g);
+      for (let i in value) {
+        if (value[i].match(/^https?:\/\/[^   ]/i)) {
+          link = value[i];
+        }
+      }
+      if (link == undefined)
+        return interaction.editReply({
+          content: "PayPayの送金リンクが検出されませんでした",
+          ephemeral: true,
+        });
 
       // テキスト内から URL (https://...) を正規表現で抽出
-      const urlMatch = inputText.match(/https?:\/\/[^\s]+/);
+      const urlMatch = link.match(/https?:\/\/[^\s]+/);
       if (!urlMatch) {
         return interaction.editReply({
           content: "有効なURLが見つかりませんでした。",
